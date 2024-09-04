@@ -13,7 +13,7 @@ def to_rgb(color):
     r0 = (color & 0xF800) >> 11
     g0 = (color & 0x07E0) >> 5
     b0 = (color & 0x001F)
-    return ((r0,g0,b0, 0)) #Now in RGBA16 format
+    return ((r0,g0,b0, 1)) #Now in RGBA16 format
 
 def interpolate_colour(color0, color1):
 
