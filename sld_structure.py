@@ -30,7 +30,7 @@ class SLD(BaseStruct):
 
     content_length: int             = Retriever(uint32,         default=0, on_set=[set_actual_content_length])
     graphics_header: GraphicsHeader = Retriever(GraphicsHeader, default=GraphicsHeader())
-    command_array: list[int]        = Retriever(Array16[CommandArray], on_set=[find_block_count])
+    command_array: list[CommandArray]        = Retriever(Array16[CommandArray], on_set=[find_block_count])
     block_count: int = 0
     fake_value: int                 = Retriever(Bytes[0], on_set=[set_layer_blocks_repeat])
     layer_blocks: list[DXT1_Block]  = Retriever(DXT1_Block, default=DXT1_Block())
