@@ -1,7 +1,26 @@
 from __future__ import annotations
 
 from binary_file_parser import BaseStruct, Retriever
-from binary_file_parser.types import uint8, uint16, uint32, FixedLenStr
+from binary_file_parser.types import uint8, uint16, uint32, FixedLenStr, Bytes
+
+class X(BaseStruct):
+    _pixel_indices: bytes = Retriever(uint8, repeat = 6)
+
+    @property
+    def v1(self):
+        return int.from_bytes(self._pixel_indices[:3], byteorder = 'little')
+
+    @v1.setter
+    def v1(self, value: int):
+        self._pixel_indices[:3] = int.to_bytes(value, 3, byteorder = 'little')
+
+    @property
+    def v2(self):
+        return int.from_bytes(self._pixel_indices[3:], byteorder = 'little')
+
+    @v2.setter
+    def v2(self, value: int):
+        self._pixel_indices[3:] = int.to_bytes(value, 3, byteorder = 'little')
 
 
 def to_rgb(color) -> tuple[int, int, int, int]:
@@ -49,7 +68,7 @@ class DXT1_Block(BaseStruct):
 class DXT4_Block(BaseStruct):
     color0: int = Retriever(uint8)
     color1: int = Retriever(uint8)
-    pixel_indices: str = Retriever(FixedLenStr[6])
+    pixel_indices: list[X] = Retriever(X)
 
     def create_lookup_table(self):
 

@@ -125,7 +125,8 @@ def MainGraphicStart(sld_file):
         for draw in range(command['draw']):
             current_block = sld_file.layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
-            print("current_block.pixel_indices", current_block.pixel_indices, type(current_block.pixel_indices))
+            print("lookup_table", lookup_table)
+            #print("current_block.pixel_indices", current_block.pixel_indices, type(current_block.pixel_indices))
             pixel_blocks.append(FillDXT1_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
@@ -151,8 +152,9 @@ def ShadowGraphicStart(sld_file):
             current_block = sld_file.shadow_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
             print("lookuptable:", lookup_table)
-            print("current_block.pixel_indices", current_block.pixel_indices, type(current_block.pixel_indices))
-            pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
+            print("current_block.pixel_indices", current_block.pixel_indices.v1, current_block.pixel_indices.v2)
+            #print("current_block.pixel_indices", current_block.pixel_indices, type(current_block.pixel_indices))
+            pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, str(current_block.pixel_indices.v1).zfill(8)))
             current_block_index += 1
 
     graphics = sld_file.graphics_header
@@ -205,4 +207,3 @@ if __name__ == "__main__":
     TestShadowImage.save("TEST_SHADOW_IMG.png")
 
     #print(sld_file)
-
