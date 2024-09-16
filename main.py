@@ -1,101 +1,8 @@
-import math
 from pathlib import Path
 
-from layer_data import DXT1_Block
+from block_contruction import FillDXT1_BlankPixelBlocks, DrawDXT1Graphic, FillDXT1_PixelBlocks, FillDXT4_PixelBlocks, \
+    DrawDXT4Graphic, FillDXT4_BlankPixelBlocks
 from sld_structure import SLD
-from PIL import Image
-
-
-def FillDXT1_BlankPixelBlocks():
-    pixels = [(0,) * 4 for _ in range(16)]
-    #print("Blank_pixels", pixels)
-    return pixels
-
-def FillDXT4_BlankPixelBlocks():
-    pixels = [(0,) * 4 for _ in range(16)]
-    #print("Blank_pixels", pixels)
-    return pixels
-
-def FillDXT1_PixelBlocks(lookup_table, pixel_indices):
-    pixels = []
-    bitmask = 0b11
-    for _ in range(16):
-        bc1_idx = pixel_indices & bitmask
-        pixels.append(lookup_table[bc1_idx])
-        pixel_indices = pixel_indices >> 2
-    return pixels
-
-
-def FillDXT4_PixelBlocks(lookup_table, pixel_indices):
-
-    pixels = []
-    bitmask = 0b111
-    pixel_indices0 = pixel_indices[0:3]
-    for shift in range(8):
-        bc4_idx = pixel_indices0 & bitmask
-        col = lookup_table[bc4_idx]
-        pixels.append(col)
-        pixel_indices0 = pixel_indices0 >> 3
-
-    pixel_indices1 = pixel_indices[3:6]
-    for shift in range(8):
-        bc4_idx = pixel_indices1 & bitmask
-        col = lookup_table[bc4_idx]
-        pixels.append(col)
-        pixel_indices1 = pixel_indices1 >> 3
-    return pixels
-
-
-
-def DrawMainGraphic(width: int, height: int, pixel_blocks: list):
-    block_size = len(pixel_blocks[0][0])
-
-    if width % block_size != 0 or height % block_size != 0:
-        raise ValueError(f"Width and height must be multiples of {block_size}")
-
-    img = Image.new('RGBA', (width, height))
-
-    width = width // block_size
-    height = height // block_size
-
-    for block_base_y in range(height):
-        for block_base_x in range(width):
-            pixel_index = block_base_y * width + block_base_x
-
-            pixels = pixel_blocks[pixel_index]
-
-            for i, pixel in enumerate(pixels):
-                x = i % 4
-                y = i // 4
-                #print("pixel", pixel)
-                img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
-
-    return img
-
-def DrawShadowGraphic(width: int, height: int, pixel_blocks: list):
-    block_size = len(pixel_blocks[0][0])
-
-    if width % block_size != 0 or height % block_size != 0:
-        raise ValueError(f"Width and height must be multiples of {block_size}")
-
-    img = Image.new('L', (width, height))
-
-    width = width // block_size
-    height = height // block_size
-
-    for block_base_y in range(height):
-        for block_base_x in range(width):
-            pixel_index = block_base_y * width + block_base_x
-
-            pixels = pixel_blocks[pixel_index]
-
-            for i, pixel in enumerate(pixels):
-                x = i % 4
-                y = i // 4
-                #print("pixel", pixel)
-                img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
-
-    return img
 
 def GetCommandList(command_array):
     command_list = []
@@ -104,106 +11,107 @@ def GetCommandList(command_array):
                              'draw': command_array[n].draw_blocks_count})
     return command_list
 
+
 def lookup_layers(frame_type):
+    frames = bin(frame_type)[2:].zfill(8)
     result = {}
-    result['player_colour'] = int(frame_type[3])
-    result['damage'] = int(frame_type[4])
-    result['???'] = int(frame_type[5])
-    result['main'] = int(frame_type[6])
-    result['shadow'] = int(frame_type[7])
+    result['03 player_colour'] = int(frames[3])
+    result['04 damage'] = int(frames[4])
+    result['05 ???'] = int(frames[5])
+    result['06 shadow'] = int(frames[6])
+    result['07 main'] = int(frames[7])
+    print("Frames present in file: ", list(reversed(sorted(result.keys()))))
     return result
 
-def MainGraphicStart(sld_file):
+def ConstructMainGraphic(sld_file, show_images=False):
     draw_commands = GetCommandList(sld_file.command_array)
 
     pixel_blocks = []
     current_block_index = 0
     for command in draw_commands:
-        # print(command['skip'], command['draw'])
         for skip in range(command['skip']):
             pixel_blocks.append(FillDXT1_BlankPixelBlocks())
         for draw in range(command['draw']):
             current_block = sld_file.layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
-            print("lookup_table", lookup_table)
-            #print("current_block.pixel_indices", current_block.pixel_indices, type(current_block.pixel_indices))
             pixel_blocks.append(FillDXT1_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
     graphics = sld_file.graphics_header
-
     width = (graphics.offset_x2 - graphics.offset_x1)
     height = (graphics.offset_y2 - graphics.offset_y1)
 
-    TestMainImage = DrawMainGraphic(width, height, pixel_blocks)
+    MainImage = DrawDXT1Graphic(width, height, pixel_blocks)
 
-    return TestMainImage
+    if show_images:
+        MainImage.show()
+    MainImage.save("images_out/main.png")
 
-def ShadowGraphicStart(sld_file):
-    draw_commands = GetCommandList(sld_file.command_array)
+    return MainImage
+
+
+def ConstructShadowGraphic(sld_file, show_images=False):
+    draw_commands = GetCommandList(sld_file.shadow_command_array)
 
     pixel_blocks = []
     current_block_index = 0
     for command in draw_commands:
-        # print(command['skip'], command['draw'])
         for skip in range(command['skip']):
             pixel_blocks.append(FillDXT4_BlankPixelBlocks())
         for draw in range(command['draw']):
             current_block = sld_file.shadow_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
-            print("lookuptable:", lookup_table)
-            print("current_block.pixel_indices", current_block.pixel_indices.v1, current_block.pixel_indices.v2)
-            #print("current_block.pixel_indices", current_block.pixel_indices, type(current_block.pixel_indices))
-            pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, str(current_block.pixel_indices.v1).zfill(8)))
+
+            pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
-    graphics = sld_file.graphics_header
+    graphics = sld_file.shadow_graphics_header
 
     width = (graphics.offset_x2 - graphics.offset_x1)
     height = (graphics.offset_y2 - graphics.offset_y1)
 
-    TestShadowImage = DrawShadowGraphic(width, height, pixel_blocks)
+    ShadowImage = DrawDXT4Graphic(width, height, pixel_blocks)
 
-    return TestShadowImage
+    if show_images:
+        ShadowImage.show()
+    ShadowImage.save("images_out/shadow.png")
 
+    return DrawDXT4Graphic(width, height, pixel_blocks)
 
-if __name__ == "__main__":
+def DrawGraphicsLayers(sld_file, show_images=False):
+    images = {}
+    frame_dict = lookup_layers(sld_file.frame_header.frame_type)
 
-    current_sld = (Path(__file__).parent / 'b_medi_castle_age3_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 's_campfire_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 'b_scen_hut_a_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 's_rubble_1x1_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 'a_alfred_attackA_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 'b_medi_castle_age3_x1.sld').absolute()
+    images['07 main'] = ConstructMainGraphic(sld_file, show_images=show_images)
 
-    sld_file: SLD = SLD._from_file(str(current_sld), strict=False)
-
-    frame_type = bin(sld_file.frame_header.frame_type)[2:].zfill(8)
-    print("Frame Type", frame_type)
-    frame_dict = lookup_layers(frame_type)
-    print(frame_dict)
-
-    TestMainImage = MainGraphicStart(sld_file)
-
-    if frame_dict['shadow']:
-        TestShadowImage = ShadowGraphicStart(sld_file)
+    if frame_dict['06 shadow']:
+        images['06 shadow'] = ConstructShadowGraphic(sld_file, show_images=show_images)
         pass
 
-    if frame_dict['???']:
+    if frame_dict['05 ???']:
         #No action known
         pass
 
-    if frame_dict['damage']:
+    if frame_dict['04 damage']:
         #Implement DXT1 algorithm for this layer
         pass
 
-    if frame_dict['player_colour']:
+    if frame_dict['03 player_colour']:
         #Implement DXT4 algorithm for this layer
         pass
 
-    TestMainImage.show()
-    TestMainImage.save("TEST_IMG.png")
-    TestShadowImage.show()
-    TestShadowImage.save("TEST_SHADOW_IMG.png")
 
-    #print(sld_file)
+    return images
+
+if __name__ == "__main__":
+
+    current_sld = (Path(__file__).parent / 'sld_source/b_medi_castle_age3_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/s_campfire_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/b_scen_hut_a_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/s_rubble_1x1_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/a_alfred_attackA_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/b_medi_castle_age3_x1.sld').absolute()
+
+    sld_file: SLD = SLD._from_file(str(current_sld), strict=False)
+
+    images = DrawGraphicsLayers(sld_file, show_images=False)
