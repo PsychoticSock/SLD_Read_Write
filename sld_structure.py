@@ -6,45 +6,20 @@ from binary_file_parser.types import uint32, ByteStream, Array16
 from block_contruction import DXT1_Block, DXT4_Block
 from file_header import SLD_Header
 from frame_header import Frame_Header
+from frames import Frame
 from layer_data import GraphicsHeader, CommandArray
 
 
 class SLD(BaseStruct):
     @staticmethod
-    def set_actual_content_length(_, instance: SLD):
-        content_length = (getattr(instance, _.s_name))
-        actual_length = content_length + ((4 - content_length) % 4)
-        setattr(instance, _.s_name, actual_length)
+    def set_frames_repeat(_: Retriever, instance: SLD):
+        Retriever.set_repeat(SLD.frames, instance, instance.header.num_frames)
 
-    @staticmethod
-    def set_layer_blocks_repeat(_, instance: SLD):
-        command_array: list[CommandArray] = getattr(instance, _.s_name)
-        count = 0
-        for item in command_array:
-            count += item.draw_blocks_count
 
-        Retriever.set_repeat(SLD.layer_blocks, instance, count)
-
-    @staticmethod
-    def shadow_set_layer_blocks_repeat(_, instance: SLD):
-        command_array: list[CommandArray] = getattr(instance, _.s_name)
-        count = 0
-        for item in command_array:
-            count += item.draw_blocks_count
-
-        Retriever.set_repeat(SLD.shadow_layer_blocks, instance, count)
-
-    header: SLD_Header                       = Retriever(SLD_Header,     default_factory=SLD_Header)
+    header: SLD_Header                       = Retriever(SLD_Header,     default_factory=SLD_Header, on_read=[set_frames_repeat])
     frame_header: Frame_Header               = Retriever(Frame_Header,   default_factory=Frame_Header)
+    frames: list[Frame] = Retriever(Frame, default_factory=Frame)
 
-    content_length: int                      = Retriever(uint32,         default=0, on_set=[set_actual_content_length])
-    graphics_header: GraphicsHeader          = Retriever(GraphicsHeader, default_factory=GraphicsHeader)
-    command_array: list[CommandArray]        = Retriever(Array16[CommandArray], on_set=[set_layer_blocks_repeat])
-    layer_blocks: list[DXT1_Block]           = Retriever(DXT1_Block, default_factory=DXT1_Block)
-    shadow_content_length: int = Retriever(uint32, default=0, on_set=[set_actual_content_length])
-    shadow_graphics_header: GraphicsHeader = Retriever(GraphicsHeader, default_factory=GraphicsHeader)
-    shadow_command_array: list[CommandArray] = Retriever(Array16[CommandArray], on_set=[shadow_set_layer_blocks_repeat])
-    shadow_layer_blocks: list[DXT4_Block] = Retriever(DXT4_Block, default_factory=DXT4_Block)
     #layers: LayerData           = Retriever(LayerData,      default=LayerData())
 
     @classmethod

@@ -30,5 +30,15 @@ class GraphicsHeader(BaseStruct):
     flag1: int = Retriever(uint8, default=0) #0, on_read=[no_flag_allowed])
     unknown1: int = Retriever(uint8, default=0)
 
+class ShortGraphicsHeader(BaseStruct):
+    @staticmethod
+    def no_flag_allowed(retriever: Retriever, instance: 'SLD'):
+        if getattr(instance, retriever.s_name) & 1:
+            raise ValueError('Not supported yet!')
+
+    Flag1: int = Retriever(uint8, default=0)
+    Unknown: int = Retriever(uint8, default=0)
+
+
 class LayerData(BaseStruct):
     pass
