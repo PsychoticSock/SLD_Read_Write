@@ -90,11 +90,14 @@ class UnknownLayer(BaseStruct):
         actual_length = content_length + ((4 - content_length) % 4)
         setattr(instance, _.s_name, actual_length)
         print(f"{_.p_name} actual_length {actual_length}, content_length {content_length}, Difference:", actual_length-content_length)
+        Retriever.set_repeat(UnknownLayer.unknown_graphics_data, instance, content_length -4)
+
         if actual_length-content_length > 0:
-            Retriever.set_repeat(UnknownLayer.unknown_graphics_data, instance, actual_length - 4)
+            Retriever.set_repeat(UnknownLayer.null_bytes, instance, (actual_length-content_length))
 
     unknown_content_length: int = Retriever(uint32, default=0, on_set=[set_unknown_content_length])
     unknown_graphics_data: bytes = Retriever(Bytes[1], repeat=-1,                         default=b"\x00")
+    null_bytes: bytes = Retriever(Bytes[1], repeat=-1, default=b"\x00")
 
 
 class DamageLayer(BaseStruct):
