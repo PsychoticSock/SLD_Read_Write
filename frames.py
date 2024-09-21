@@ -6,6 +6,7 @@ from binary_file_parser.types import uint8, uint16, uint32, Array16, Bytes, void
 import frames
 import sld_structure
 from block_contruction import DXT1_Block, DXT4_Block
+from frame_header import Frame_Header
 from layer_data import GraphicsHeader, CommandArray, ShortGraphicsHeader, PlayerColourLayer, DamageLayer, ShadowLayer, \
     MainLayer, UnknownLayer
 
@@ -35,7 +36,14 @@ class Frame(BaseStruct):
 
 
 
+    @staticmethod
+    def set_flags(_, instance: Frame):
+        print(f"Layers present in file: {sld_structure.lookup_layers(instance.frame_header.frame_type)}")
+        print(instance.frame_header)
+        Frame.flags = instance.frame_header.frame_type
 
+
+    frame_header: Frame_Header               = Retriever(Frame_Header,   default_factory=Frame_Header, on_read=[set_flags])
     void: void = Retriever(Bytes[0], on_read = [set_layer_repeats])
     main: MainLayer = Retriever(MainLayer, default_factory=MainLayer)
     shadow: ShadowLayer = Retriever(ShadowLayer, default_factory=ShadowLayer)

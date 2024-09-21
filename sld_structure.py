@@ -24,13 +24,7 @@ class SLD(BaseStruct):
         Retriever.set_repeat(SLD.frames, instance, instance.header.num_frames)
         print(f"Frames: {instance.header.num_frames}")
 
-    @staticmethod
-    def set_flags(_, instance: SLD):
-        print(f"Layers present in file: {lookup_layers(instance.frame_header.frame_type)}")
-        Frame.flags = instance.frame_header.frame_type
-
     header: SLD_Header                       = Retriever(SLD_Header,     default_factory=SLD_Header, on_read=[set_frames_repeat])
-    frame_header: Frame_Header               = Retriever(Frame_Header,   default_factory=Frame_Header, on_read=[set_flags])
     frames: list[Frame] = Retriever(Frame, default_factory=Frame)
 
     #layers: LayerData           = Retriever(LayerData,      default=LayerData())

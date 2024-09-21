@@ -163,6 +163,7 @@ if __name__ == "__main__":
     current_sld = (Path(__file__).parent / 'sld_source/b_medi_castle_age3_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/s_rubble_1x1_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/a_alfred_attackA_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/u_sie_cobra_car_idleA_x1.sld').absolute()
 
     print(f"Using file {current_sld}:")
     sld_file: SLD = SLD._from_file(str(current_sld), strict=False)
