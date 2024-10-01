@@ -2,6 +2,7 @@ from pathlib import Path
 
 from block_contruction import FillDXT1_BlankPixelBlocks, DrawDXT1Graphic, FillDXT1_PixelBlocks, FillDXT4_PixelBlocks, \
     DrawDXT4Graphic, FillDXT4_BlankPixelBlocks
+from compression_test import decompress_image
 from sld_structure import SLD, lookup_layers
 
 
@@ -131,7 +132,7 @@ def ConstructPlayerColourGraphic(sld_file, current_frame, show_images=False):
 def DrawGraphicsLayers(sld_file, current_frame, show_images):
     images = {}
     frame_dict = lookup_layers(sld_file.frames[current_frame].frame_header.frame_type)
-    print(frame_dict)
+    #print(frame_dict)
     images.setdefault('07 main',{})
 
     images['07 main'][current_frame] = ConstructMainGraphic(sld_file, current_frame, show_images)
@@ -157,20 +158,21 @@ def DrawGraphicsLayers(sld_file, current_frame, show_images):
 
 if __name__ == "__main__":
 
-
     current_sld = (Path(__file__).parent / 'sld_source/u_sie_cobra_car_idleA_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/a_alfred_attackA_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/s_rubble_1x1_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 'sld_source/s_campfire_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/b_scen_hut_a_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/b_medi_castle_age3_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/s_campfire_x1.sld').absolute()
 
     print(f"Using file {current_sld}:")
     sld_file: SLD = SLD._from_file(str(current_sld), strict=False)
 
     for frame in range(sld_file.header.num_frames):
-        print(frame)
+        #print(frame)
         images = DrawGraphicsLayers(sld_file, frame, show_images=False)
+
+    #print(sld_file.frames[0])
 
 
     #Using file C:\Users\Christian\PycharmProjects\SLD\sld_source\a_alfred_attackA_x1.sld:

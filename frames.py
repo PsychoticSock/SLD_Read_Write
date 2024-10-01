@@ -38,8 +38,8 @@ class Frame(BaseStruct):
 
     @staticmethod
     def set_flags(_, instance: Frame):
-        print(f"Layers present in file: {sld_structure.lookup_layers(instance.frame_header.frame_type)}")
-        print(instance.frame_header)
+        #print(f"Layers present in file: {sld_structure.lookup_layers(instance.frame_header.frame_type)}")
+        #print(instance.frame_header)
         Frame.flags = instance.frame_header.frame_type
 
 

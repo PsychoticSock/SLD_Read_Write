@@ -1,6 +1,6 @@
 from PIL import Image
 from binary_file_parser import BaseStruct, Retriever
-from binary_file_parser.types import uint8, uint16, uint32
+from binary_file_parser.types import uint8, uint16, uint32, Bytes
 
 
 def FillDXT1_BlankPixelBlocks():
@@ -109,6 +109,8 @@ class DXT1_Block(BaseStruct):
     color1: int = Retriever(uint16)
     pixel_indices: int = Retriever(uint32)
 
+
+
     def create_lookup_table(self):
         rgb0 = to_rgb(self.color0)
         rgb1 = to_rgb(self.color1)
@@ -129,6 +131,50 @@ class DXT1_Block(BaseStruct):
         return [
             tuple(rgb) for rgb in [rgb0, rgb1, rgb2, rgb3]
         ]
+
+
+class NVTT_DXT4_Block(BaseStruct):
+
+    AlphaDiscard: bytes = Retriever(Bytes[8])
+    color0: int = Retriever(uint8)
+    color1: int = Retriever(uint8)
+    pixel_indices: list[X] = Retriever(X)
+
+    def create_lookup_table(self):
+
+        rgb0 = self.color0
+        rgb1 = self.color1
+        rgb2 = 0
+        rgb3 = 0
+        rgb4 = 0
+        rgb5 = 0
+        rgb6 = 0
+        rgb7 = 0
+
+        if self.color0 > self.color1:
+            rgb2 = int((6 * rgb0 + 1 * rgb1) / 7)
+            rgb3 = int((5 * rgb0 + 2 * rgb1) / 7)
+            rgb4 = int((4 * rgb0 + 3 * rgb1) / 7)
+            rgb5 = int((3 * rgb0 + 4 * rgb1) / 7)
+            rgb6 = int((2 * rgb0 + 5 * rgb1) / 7)
+            rgb7 = int((1 * rgb0 + 6 * rgb1) / 7)
+
+        if self.color0 <= self.color1:
+            rgb2 = int((4 * rgb0 + 1 * rgb1) / 5.0)
+            rgb3 = int((3 * rgb0 + 2 * rgb1) / 5.0)
+            rgb4 = int((2 * rgb0 + 3 * rgb1) / 5.0)
+            rgb5 = int((1 * rgb0 + 4 * rgb1) / 5.0)
+            rgb6 = 0
+            rgb7 = 255
+
+        return [rgb0,
+                rgb1,
+                rgb2,
+                rgb3,
+                rgb4,
+                rgb5,
+                rgb6,
+                rgb7]
 
 
 class DXT4_Block(BaseStruct):
