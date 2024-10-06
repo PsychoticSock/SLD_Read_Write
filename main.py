@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from block_contruction import FillDXT1_BlankPixelBlocks, DrawDXT1Graphic, FillDXT1_PixelBlocks, FillDXT4_PixelBlocks, \
+from block_contruction import FillDXT1_BlankPixelBlocks, DrawDXT1Graphic, FillDXT1_PixelBlocks, Fill_SLD_DXT4_PixelBlocks, \
     DrawDXT4Graphic, FillDXT4_BlankPixelBlocks
-from compression_test import decompress_image
 from sld_structure import SLD, lookup_layers
 
 
@@ -85,7 +84,7 @@ def ConstructShadowGraphic(sld_file, current_frame, show_images=False):
             current_block = sld_file.frames[current_frame].shadow.shadow_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
 
-            pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
+            pixel_blocks.append(Fill_SLD_DXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
     graphics = sld_file.frames[current_frame].shadow.shadow_graphics_header
@@ -113,7 +112,7 @@ def ConstructPlayerColourGraphic(sld_file, current_frame, show_images=False):
             current_block = sld_file.frames[current_frame].player_colour.player_colour_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
 
-            pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
+            pixel_blocks.append(Fill_SLD_DXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
     graphics = sld_file.frames[current_frame].main.graphics_header
@@ -162,8 +161,9 @@ if __name__ == "__main__":
     current_sld = (Path(__file__).parent / 'sld_source/a_alfred_attackA_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/s_rubble_1x1_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/b_scen_hut_a_x1.sld').absolute()
-    current_sld = (Path(__file__).parent / 'sld_source/b_medi_castle_age3_x1.sld').absolute()
     current_sld = (Path(__file__).parent / 'sld_source/s_campfire_x1.sld').absolute()
+    current_sld = (Path(__file__).parent / 'sld_source/b_medi_castle_age3_x1.sld').absolute()
+
 
     print(f"Using file {current_sld}:")
     sld_file: SLD = SLD._from_file(str(current_sld), strict=False)

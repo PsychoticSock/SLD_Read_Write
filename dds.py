@@ -5,8 +5,8 @@ import math
 from binary_file_parser import BaseStruct, Retriever
 from binary_file_parser.types import uint32, FixedLenStr
 
-from block_contruction import DXT1_Block, DrawDXT1Graphic, FillDXT1_PixelBlocks, DrawDXT4Graphic, \
-    FillDXT4_PixelBlocks, NVTT_DXT4_Block
+from block_contruction import DXT1_Block, NVTT_DXT4_Block, DrawDXT1Graphic, FillDXT1_PixelBlocks, DrawDXT4Graphic, \
+    Fill_DXT4_PixelBlocks
 
 
 def DetermineBlockSize(dds_data):
@@ -92,35 +92,24 @@ class DDS_DXT4(BaseStruct):
     layer_blocks: list[NVTT_DXT4_Block]     = Retriever(NVTT_DXT4_Block,                    default_factory=NVTT_DXT4_Block)
     # @formatter:on
 
-
-# dds_main_data = DDS._from_file("test_block.dds", strict=True)
 dds_main_data = DDS_DXT1._from_file("rainbow_out.dds", strict=True)
-dds_shadow_data = DDS_DXT4._from_file("rainbow_alpha_out.dds", strict=False)
-#dds_shadow_data = DDS_DXT4._from_file("test_block_bc3.dds", strict=False)
-#dds_shadow_data = DDS_DXT4._from_file("fullred.dds", strict=False)
+dds_shadow_data = DDS_DXT4._from_file("rainbow_alpha_out2.dds", strict=False)
 
-print(dds_shadow_data)
 pixel_blocks = []
 for block_index in range(len(dds_main_data.layer_blocks)):
     lookup_table = dds_main_data.layer_blocks[block_index].create_lookup_table()
     pixel_blocks.append(FillDXT1_PixelBlocks(lookup_table, dds_main_data.layer_blocks[block_index].pixel_indices))
 
-#print("pixel_blocks", pixel_blocks)
-print(len(pixel_blocks))
+MainImage = DrawDXT1Graphic(dds_main_data.dwWidth, dds_main_data.dwHeight, pixel_blocks)
+
+MainImage.show()
+MainImage.save(f"dds_main_test.png")
 
 shadow_pixel_blocks = []
 for block_index in range(len(dds_shadow_data.layer_blocks)):
-    print("block_index", block_index)
     lookup_table = dds_shadow_data.layer_blocks[block_index].create_lookup_table()
-    shadow_pixel_blocks.append(FillDXT4_PixelBlocks(lookup_table, dds_shadow_data.layer_blocks[block_index].pixel_indices))
-print("shadow_pixel_blocks", shadow_pixel_blocks)
-print("len(shadow_pixel_blocks)", len(shadow_pixel_blocks))
+    shadow_pixel_blocks.append(Fill_DXT4_PixelBlocks(lookup_table, dds_shadow_data.layer_blocks[block_index].pixel_indices))
 
-MainImage = DrawDXT1Graphic(dds_main_data.dwWidth, dds_main_data.dwHeight, pixel_blocks)
 ShadowImage = DrawDXT4Graphic(dds_shadow_data.dwWidth, dds_shadow_data.dwHeight, shadow_pixel_blocks)
-
-
-#MainImage.show()
-#MainImage.save(f"dds_main_test.png")
 ShadowImage.show()
 ShadowImage.save(f"dds_shadow_test.png")

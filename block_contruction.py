@@ -1,6 +1,20 @@
+from __future__ import annotations
+
 from PIL import Image
 from binary_file_parser import BaseStruct, Retriever
 from binary_file_parser.types import uint8, uint16, uint32, Bytes
+
+def unpack_565_color(input_color):
+    # Note only returning red component to use in greyscale images
+    red = (( input_color >> 11 ) & 0x1f )
+    green = (( input_color >> 5 ) & 0x3f )
+    blue = ( input_color & 0x1f )
+    colour = []
+    colour.append(( red << 3 ) | ( red >> 2 ))
+    colour.append(( green << 2 ) | ( green >> 4 ))
+    colour.append(( blue << 3 ) | ( blue >> 2 ))
+    colour.append(255)
+    return colour[0]
 
 
 def FillDXT1_BlankPixelBlocks():
@@ -20,7 +34,42 @@ def FillDXT1_PixelBlocks(lookup_table, pixel_indices):
     return pixels
 
 
-def FillDXT4_PixelBlocks(lookup_table, pixel_indices):
+def Fill_DXT4_PixelBlocks(lookup_table, pixel_indices):
+    pixels = []
+    bitmask = 0b11
+
+    pixel_indices0 = pixel_indices[0]
+    for shift in range(4):
+        bc4_idx = pixel_indices0 & bitmask
+        col = lookup_table[bc4_idx]
+        pixels.append(col)
+        pixel_indices0 = pixel_indices0 >> 2
+
+    pixel_indices1 = pixel_indices[1]
+    for shift in range(4):
+        bc4_idx = pixel_indices1 & bitmask
+        col = lookup_table[bc4_idx]
+        pixels.append(col)
+        pixel_indices1 = pixel_indices1 >> 2
+
+    pixel_indices2 = pixel_indices[2]
+    for shift in range(4):
+        bc4_idx = pixel_indices2 & bitmask
+        col = lookup_table[bc4_idx]
+        pixels.append(col)
+        pixel_indices2 = pixel_indices2 >> 2
+
+    pixel_indices3 = pixel_indices[3]
+    for shift in range(4):
+        bc4_idx = pixel_indices3 & bitmask
+        col = lookup_table[bc4_idx]
+        pixels.append(col)
+        pixel_indices3 = pixel_indices3 >> 2
+
+    return pixels
+
+
+def Fill_SLD_DXT4_PixelBlocks(lookup_table, pixel_indices):
     pixels = []
     bitmask = 0b111
 
@@ -75,7 +124,6 @@ def DrawDXT4Graphic(width: int, height: int, pixel_blocks: list):
             for i, pixel in enumerate(pixels):
                 x = i % 4
                 y = i // 4
-                #print("pixel", pixel)
                 img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
     return img
 
@@ -109,8 +157,6 @@ class DXT1_Block(BaseStruct):
     color1: int = Retriever(uint16)
     pixel_indices: int = Retriever(uint32)
 
-
-
     def create_lookup_table(self):
         rgb0 = to_rgb(self.color0)
         rgb1 = to_rgb(self.color1)
@@ -132,49 +178,23 @@ class DXT1_Block(BaseStruct):
             tuple(rgb) for rgb in [rgb0, rgb1, rgb2, rgb3]
         ]
 
-
 class NVTT_DXT4_Block(BaseStruct):
-
     AlphaDiscard: bytes = Retriever(Bytes[8])
-    color0: int = Retriever(uint8)
-    color1: int = Retriever(uint8)
-    pixel_indices: list[X] = Retriever(X)
+
+    colorData0: int = Retriever(uint16)
+    colorData1: int = Retriever(uint16)
+    pixel_indices: list[int] = Retriever(uint8, repeat=4)
 
     def create_lookup_table(self):
+        color0 = unpack_565_color(self.colorData0)
+        color1 = unpack_565_color(self.colorData1)
+        color2 = int(2 / 3 * color0 + 1 / 3 * color1)
+        color3 = int(1 / 3 * color0 + 2 / 3 * color1)
 
-        rgb0 = self.color0
-        rgb1 = self.color1
-        rgb2 = 0
-        rgb3 = 0
-        rgb4 = 0
-        rgb5 = 0
-        rgb6 = 0
-        rgb7 = 0
-
-        if self.color0 > self.color1:
-            rgb2 = int((6 * rgb0 + 1 * rgb1) / 7)
-            rgb3 = int((5 * rgb0 + 2 * rgb1) / 7)
-            rgb4 = int((4 * rgb0 + 3 * rgb1) / 7)
-            rgb5 = int((3 * rgb0 + 4 * rgb1) / 7)
-            rgb6 = int((2 * rgb0 + 5 * rgb1) / 7)
-            rgb7 = int((1 * rgb0 + 6 * rgb1) / 7)
-
-        if self.color0 <= self.color1:
-            rgb2 = int((4 * rgb0 + 1 * rgb1) / 5.0)
-            rgb3 = int((3 * rgb0 + 2 * rgb1) / 5.0)
-            rgb4 = int((2 * rgb0 + 3 * rgb1) / 5.0)
-            rgb5 = int((1 * rgb0 + 4 * rgb1) / 5.0)
-            rgb6 = 0
-            rgb7 = 255
-
-        return [rgb0,
-                rgb1,
-                rgb2,
-                rgb3,
-                rgb4,
-                rgb5,
-                rgb6,
-                rgb7]
+        return [color0,
+                color1,
+                color2,
+                color3]
 
 
 class DXT4_Block(BaseStruct):
@@ -183,7 +203,6 @@ class DXT4_Block(BaseStruct):
     pixel_indices: list[X] = Retriever(X)
 
     def create_lookup_table(self):
-
         rgb0 = self.color0
         rgb1 = self.color1
         rgb2 = 0
