@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 from binary_file_parser import BaseStruct, Retriever
-from binary_file_parser.types import uint8, uint16, uint32, Array16, Bytes, void
+from binary_file_parser.types import Bytes, void
 
-import frames
-import sld_structure
-from block_contruction import DXT1_Block, DXT4_Block
-from frame_header import Frame_Header
-from layer_data import GraphicsHeader, CommandArray, ShortGraphicsHeader, PlayerColourLayer, DamageLayer, ShadowLayer, \
+from SLD_struct import sld_structure
+from SLD_struct.frame_header import Frame_Header
+from SLD_struct.layer_data import PlayerColourLayer, DamageLayer, ShadowLayer, \
     MainLayer, UnknownLayer
 
 

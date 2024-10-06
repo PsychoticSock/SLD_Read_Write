@@ -2,7 +2,7 @@ from pathlib import Path
 
 from block_contruction import FillDXT1_BlankPixelBlocks, DrawDXT1Graphic, FillDXT1_PixelBlocks, Fill_SLD_DXT4_PixelBlocks, \
     DrawDXT4Graphic, FillDXT4_BlankPixelBlocks
-from sld_structure import SLD, lookup_layers
+from SLD_struct.sld_structure import SLD, lookup_layers
 
 
 def GetCommandList(command_array):
