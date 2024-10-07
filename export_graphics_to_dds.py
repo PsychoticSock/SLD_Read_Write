@@ -92,8 +92,8 @@ class DDS_DXT4(BaseStruct):
     layer_blocks: list[NVTT_DXT4_Block]     = Retriever(NVTT_DXT4_Block,                    default_factory=NVTT_DXT4_Block)
     # @formatter:on
 
-dds_main_data = DDS_DXT1._from_file("rainbow_out.dds", strict=True)
-dds_shadow_data = DDS_DXT4._from_file("rainbow_alpha_out2.dds", strict=False)
+dds_main_data = DDS_DXT1._from_file("nvtt_output/rainbow_bc1a.dds", strict=True)
+dds_shadow_data = DDS_DXT4._from_file("nvtt_output/rainbow_alpha_bc3.dds", strict=False)
 
 pixel_blocks = []
 for block_index in range(len(dds_main_data.layer_blocks)):

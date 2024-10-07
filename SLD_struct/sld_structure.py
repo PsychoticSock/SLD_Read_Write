@@ -6,6 +6,8 @@ from binary_file_parser.types import ByteStream
 from SLD_struct.file_header import SLD_Header
 from SLD_struct.frames import Frame
 
+
+
 def lookup_layers(frame_type):
     frames = bin(frame_type)[2:].zfill(8)
     result = {}

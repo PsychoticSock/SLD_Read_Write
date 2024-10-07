@@ -88,15 +88,15 @@ def Fill_SLD_DXT4_PixelBlocks(lookup_table, pixel_indices):
         pixel_indices1 = pixel_indices1 >> 3
     return pixels
 
-def DrawDXT1Graphic(width: int, height: int, pixel_blocks: list):
+def DrawDXT1Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
 
     block_size = len(pixel_blocks[0][0])
 
-    img = Image.new('RGBA', (width, height))
-    width = width // block_size
-    height = height // block_size
+    img = Image.new('RGBA', (canvas_width, canvas_height))
+    width = canvas_width // block_size
+    height = canvas_height // block_size
 
-    for block_base_y in range(height):
+    for block_base_y in range(height+1):
         for block_base_x in range(width):
             pixel_index = block_base_y * width + block_base_x
             pixels = pixel_blocks[pixel_index]
@@ -104,18 +104,19 @@ def DrawDXT1Graphic(width: int, height: int, pixel_blocks: list):
             for i, pixel in enumerate(pixels):
                 x = i % 4
                 y = i // 4
-                img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
+                if block_base_y * block_size + y < canvas_height:
+                    img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
     return img
 
-def DrawDXT4Graphic(width: int, height: int, pixel_blocks: list):
+def DrawDXT4Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
 
     block_size = 4
 
-    img = Image.new('L', (width, height))
-    width = width // block_size
-    height = height // block_size
+    img = Image.new('L', (canvas_width, canvas_height))
+    width = canvas_width // block_size
+    height = canvas_height // block_size
 
-    for block_base_y in range(height):
+    for block_base_y in range(height+1):
         for block_base_x in range(width):
             pixel_index = block_base_y * width + block_base_x
 
@@ -124,7 +125,8 @@ def DrawDXT4Graphic(width: int, height: int, pixel_blocks: list):
             for i, pixel in enumerate(pixels):
                 x = i % 4
                 y = i // 4
-                img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
+                if block_base_y * block_size + y < canvas_height:
+                    img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
     return img
 
 class X(BaseStruct):
