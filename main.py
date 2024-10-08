@@ -36,3 +36,4 @@ SMX_test = True
 if SMX_test:
     print(f"Using file {current_smx}:")
     smx_file: SLD = SMX._from_file(str(current_smx), strict=False)
+    print(smx_file)
