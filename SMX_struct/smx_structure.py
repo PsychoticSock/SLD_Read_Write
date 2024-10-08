@@ -18,13 +18,51 @@ class SMX_Layer_Header(BaseStruct):
     Unknown: int                = Retriever(uint32,     default=0)
 
 class SMXOutlineLayer(BaseStruct):
-    layer_header: SMX_Layer_Header  = Retriever(SMX_Layer_Header, default_factory=SMX_Layer_Header)
+    @staticmethod
+    def set_combined_array_repeat(_, instance: SLXMainLayer):
+        #print("instance.layer_header.height", instance.layer_header.layer_len)
+        Retriever.set_repeat(SLXMainLayer.command_array, instance, instance.layer_header.layer_len)
+
+    # @formatter:off
+    layer_header: SMX_Layer_Header  = Retriever(SMX_Layer_Header, default_factory=SMX_Layer_Header, on_read=[set_combined_array_repeat])
+    command_array: list[int]                = Retriever(uint8, repeat=-1, default=0)
 
 class SMXShadowLayer(BaseStruct):
-    layer_header: SMX_Layer_Header  = Retriever(SMX_Layer_Header, default_factory=SMX_Layer_Header)
+    @staticmethod
+    def set_combined_array_repeat(_, instance: SLXMainLayer):
+        #print("instance.layer_header.height", instance.layer_header.layer_len)
+        Retriever.set_repeat(SLXMainLayer.command_array, instance, instance.layer_header.layer_len)
+
+    # @formatter:off
+    layer_header: SMX_Layer_Header  = Retriever(SMX_Layer_Header, default_factory=SMX_Layer_Header, on_read=[set_combined_array_repeat])
+    command_array: list[int]                = Retriever(uint8, repeat=-1, default=0)
+
+class SMP_Layer_Row_Edge(BaseStruct):
+    left_space: int             = Retriever(uint16, default=0)
+    right_space: int            = Retriever(uint16, default=0)
 
 class SLXMainLayer(BaseStruct):
-    layer_header: SMX_Layer_Header  = Retriever(SMX_Layer_Header, default_factory=SMX_Layer_Header)
+    @staticmethod
+    def set_row_edge_repeat(_, instance: SLXMainLayer):
+        #print("instance.layer_header.height", instance.layer_header.height)
+        Retriever.set_repeat(SLXMainLayer.smp_layer_row_edge, instance, instance.layer_header.height)
+    @staticmethod
+    def set_command_array_repeat(_, instance: SLXMainLayer):
+        #print("instance.layer_header.height", instance.layer_header.height)
+        Retriever.set_repeat(SLXMainLayer.command_array, instance, instance.command_array_length)
+    @staticmethod
+    def set_pixel_array_repeat(_, instance: SLXMainLayer):
+        #print("instance.layer_header.height", instance.layer_header.height)
+        Retriever.set_repeat(SLXMainLayer.pixel_data_array, instance, instance.pixel_data_array_length)
+
+    # @formatter:off
+    layer_header: SMX_Layer_Header          = Retriever(SMX_Layer_Header, default_factory=SMX_Layer_Header, on_read=[set_row_edge_repeat])
+    smp_layer_row_edge: SMP_Layer_Row_Edge  = Retriever(SMP_Layer_Row_Edge, repeat=-1)
+    command_array_length: int               = Retriever(uint32, default=0, on_read=[set_command_array_repeat])
+    pixel_data_array_length: int                = Retriever(uint32, default=0, on_read=[set_pixel_array_repeat])
+    command_array: list[int]                = Retriever(uint8, repeat=-1, default=0)
+    pixel_data_array: list[int]             = Retriever(uint8, repeat=-1, default=0)
+    # @formatter:on
 
 class SMX_Frame_Header(BaseStruct):
     # @formatter:off
@@ -34,11 +72,13 @@ class SMX_Frame_Header(BaseStruct):
     # @formatter:on
 
 class Frame(BaseStruct):
+    compression_8_to_5 = False
+    shadows_on_top = False
     @staticmethod
     def set_layer_repeats(_, instance: Frame):
 
         frame_type = (instance.frame_header.frame_type)
-        print(frame_type)
+        #print(frame_type)
 
         main_bitmask = 0b00000001
         shadow_bitmask = 0b00000010
@@ -46,24 +86,26 @@ class Frame(BaseStruct):
         bitmask_8to5 = 0b00001000
         animations_shadows_on_top = 0b00010000
 
-        print("main", frame_type & main_bitmask)
-        print("shadow", frame_type & shadow_bitmask)
-        print("outline", frame_type & outline_bitmask)
-        print("8_to_5 compression_8_to_5", frame_type & bitmask_8to5)
-        print("animations_shadows_on_top", frame_type & animations_shadows_on_top)
+        #print("main", frame_type & main_bitmask)
+        #print("shadow", frame_type & shadow_bitmask)
+        #print("outline", frame_type & outline_bitmask)
+        #print("8_to_5 compression_8_to_5", frame_type & bitmask_8to5)
+        #print("animations_shadows_on_top", frame_type & animations_shadows_on_top)
 
         if frame_type & main_bitmask:
-            print("main")
+            pass
+            #    print("main")
 
         if frame_type & shadow_bitmask:
             Retriever.set_repeat(Frame.shadow, instance, 1)
         if frame_type & outline_bitmask:
             Retriever.set_repeat(Frame.outline, instance, 1)
         if frame_type & bitmask_8to5:
-            pass #Below is probably not the way to use this
-            #Retriever.set_repeat(Frame.compression_8_to_5, instance, -1)
+            Frame.compression_8_to_5 = True
         if frame_type & animations_shadows_on_top:
-            Retriever.set_repeat(Frame.animations_shadows_on_top, instance, -1)
+            Frame.shadows_on_top = True
+        #print("compression_8_to_5", Frame.compression_8_to_5)
+        #print("shadows_on_top", Frame.shadows_on_top)
 
     @staticmethod
     def set_flags(_, instance: Frame):
@@ -100,7 +142,7 @@ class SMX(BaseStruct):
     @staticmethod
     def set_frames_repeat(_: Retriever, instance: SMX):
         Retriever.set_repeat(SMX.frames, instance, instance.header.num_frames)
-        print(f"Frames: {instance.header.num_frames}")
+        #print(f"Frames: {instance.header.num_frames}")
 
     header: SMX_Header                          = Retriever(SMX_Header,             default_factory=SMX_Header, on_read=[set_frames_repeat])
     frames: list[Frame]                         = Retriever(Frame,                  default_factory=Frame)
