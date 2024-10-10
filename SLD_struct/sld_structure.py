@@ -3,8 +3,8 @@ from __future__ import annotations
 from binary_file_parser import BaseStruct, Retriever, Version
 from binary_file_parser.types import ByteStream
 
-from SLD_struct.file_header import SLD_Header
-from SLD_struct.frames import Frame
+from SLD_struct.sld_file_header import SLD_Header
+from SLD_struct.sld_frames import SLD_Frame
 
 
 
@@ -26,7 +26,7 @@ class SLD(BaseStruct):
         print(f"Frames: {instance.header.num_frames}")
 
     header: SLD_Header                       = Retriever(SLD_Header,     default_factory=SLD_Header, on_read=[set_frames_repeat])
-    frames: list[Frame] = Retriever(Frame, default_factory=Frame)
+    frames: list[SLD_Frame] = Retriever(SLD_Frame, default_factory=SLD_Frame)
 
     #layers: LayerData           = Retriever(LayerData,      default=LayerData())
 

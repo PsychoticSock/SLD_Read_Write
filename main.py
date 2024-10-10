@@ -22,7 +22,7 @@ if __name__ == "__main__":
     current_smx = (Path(__file__).parent / 'smx_source/s_campfire_x1.smx').absolute()
     current_smx = (Path(__file__).parent / 'smx_source/b_medi_castle_age3_x1.smx').absolute()
 
-SLD_test = False
+SLD_test = True
 if SLD_test:
     print(f"Using file {current_sld}:")
     sld_file: SLD = SLD._from_file(str(current_sld), strict=False)
