@@ -88,7 +88,12 @@ def Fill_SLD_DXT4_PixelBlocks(lookup_table, pixel_indices):
         pixel_indices1 = pixel_indices1 >> 3
     return pixels
 
-def DrawDXT1Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
+def DrawDXT1Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list, from_dds_file=False):
+
+    if from_dds_file:
+        offset = 1
+    else:
+        offset = 0
 
     block_size = len(pixel_blocks[0][0])
 
@@ -96,7 +101,7 @@ def DrawDXT1Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
     width = canvas_width // block_size
     height = canvas_height // block_size
 
-    for block_base_y in range(height+1):
+    for block_base_y in range(height+offset):
         for block_base_x in range(width):
             pixel_index = block_base_y * width + block_base_x
             pixels = pixel_blocks[pixel_index]
@@ -108,7 +113,12 @@ def DrawDXT1Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
                     img.putpixel((block_base_x * block_size + x, block_base_y * block_size + y), pixel)
     return img
 
-def DrawDXT4Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
+def DrawDXT4Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list, from_dds_file=False):
+
+    if from_dds_file:
+        offset = 1
+    else:
+        offset = 0
 
     block_size = 4
 
@@ -116,7 +126,7 @@ def DrawDXT4Graphic(canvas_width: int, canvas_height: int, pixel_blocks: list):
     width = canvas_width // block_size
     height = canvas_height // block_size
 
-    for block_base_y in range(height+1):
+    for block_base_y in range(height+offset):
         for block_base_x in range(width):
             pixel_index = block_base_y * width + block_base_x
 

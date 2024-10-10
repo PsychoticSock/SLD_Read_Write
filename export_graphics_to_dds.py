@@ -100,7 +100,7 @@ for block_index in range(len(dds_main_data.layer_blocks)):
     lookup_table = dds_main_data.layer_blocks[block_index].create_lookup_table()
     pixel_blocks.append(FillDXT1_PixelBlocks(lookup_table, dds_main_data.layer_blocks[block_index].pixel_indices))
 
-MainImage = DrawDXT1Graphic(dds_main_data.dwWidth, dds_main_data.dwHeight, pixel_blocks)
+MainImage = DrawDXT1Graphic(dds_main_data.dwWidth, dds_main_data.dwHeight, pixel_blocks, from_dds_file=True)
 
 MainImage.show()
 MainImage.save(f"dds_main_test.png")
@@ -110,6 +110,6 @@ for block_index in range(len(dds_shadow_data.layer_blocks)):
     lookup_table = dds_shadow_data.layer_blocks[block_index].create_lookup_table()
     shadow_pixel_blocks.append(Fill_DXT4_PixelBlocks(lookup_table, dds_shadow_data.layer_blocks[block_index].pixel_indices))
 
-ShadowImage = DrawDXT4Graphic(dds_shadow_data.dwWidth, dds_shadow_data.dwHeight, shadow_pixel_blocks)
+ShadowImage = DrawDXT4Graphic(dds_shadow_data.dwWidth, dds_shadow_data.dwHeight, shadow_pixel_blocks, from_dds_file=True)
 ShadowImage.show()
 ShadowImage.save(f"dds_shadow_test.png")

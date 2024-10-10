@@ -18,9 +18,9 @@ if __name__ == "__main__":
     current_smx = (Path(__file__).parent / 'smx_source/b_scen_hut_a_x1.smx').absolute()
     current_smx = (Path(__file__).parent / 'smx_source/s_rubble_1x1_x1.smx').absolute()
     current_smx = (Path(__file__).parent / 'smx_source/u_sie_cobra_car_idleA_x1.smx').absolute()
-    current_smx = (Path(__file__).parent / 'smx_source/b_medi_castle_age3_x1.smx').absolute()
     current_smx = (Path(__file__).parent / 'smx_source/a_alfred_attackA_x1.smx').absolute()
     current_smx = (Path(__file__).parent / 'smx_source/s_campfire_x1.smx').absolute()
+    current_smx = (Path(__file__).parent / 'smx_source/b_medi_castle_age3_x1.smx').absolute()
 
 SLD_test = False
 if SLD_test:
