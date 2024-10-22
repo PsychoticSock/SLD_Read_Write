@@ -22,11 +22,11 @@ def lookup_layers(frame_type):
 class SLD(BaseStruct):
     @staticmethod
     def set_frames_repeat(_: Retriever, instance: SLD):
-        Retriever.set_repeat(SLD.frames, instance, instance.header.num_frames)
-        print(f"Frames: {instance.header.num_frames}")
+        Retriever.set_repeat(SLD.sld_frames, instance, instance.sld_header.num_frames)
+        print(f"Frames: {instance.sld_header.num_frames}")
 
-    header: SLD_Header                       = Retriever(SLD_Header,     default_factory=SLD_Header, on_read=[set_frames_repeat])
-    frames: list[SLD_Frame] = Retriever(SLD_Frame, default_factory=SLD_Frame)
+    sld_header: SLD_Header                       = Retriever(SLD_Header, default_factory=SLD_Header, on_read=[set_frames_repeat])
+    sld_frames: list[SLD_Frame] = Retriever(SLD_Frame, default_factory=SLD_Frame)
 
     #layers: LayerData           = Retriever(LayerData,      default=LayerData())
 

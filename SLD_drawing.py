@@ -13,7 +13,7 @@ def GetCommandList(command_array):
 
 
 def ConstructMainGraphic(sld_file, current_frame, show_images=False):
-    draw_commands = GetCommandList(sld_file.frames[current_frame].sld_main.command_array)
+    draw_commands = GetCommandList(sld_file.sld_frames[current_frame].sld_main.command_array)
 
     pixel_blocks = []
     current_block_index = 0
@@ -23,12 +23,12 @@ def ConstructMainGraphic(sld_file, current_frame, show_images=False):
 
             pixel_blocks.append(FillDXT1_BlankPixelBlocks())
         for draw in range(command['draw']):
-            current_block = sld_file.frames[current_frame].sld_main.layer_blocks[current_block_index]
+            current_block = sld_file.sld_frames[current_frame].sld_main.layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
             pixel_blocks.append(FillDXT1_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
-    graphics = sld_file.frames[current_frame].sld_main.graphics_header
+    graphics = sld_file.sld_frames[current_frame].sld_main.graphics_header
     width = (graphics.offset_x2 - graphics.offset_x1)
     height = (graphics.offset_y2 - graphics.offset_y1)
 
@@ -42,7 +42,7 @@ def ConstructMainGraphic(sld_file, current_frame, show_images=False):
 
 def ConstructDamageGraphic(sld_file, current_frame, show_images=False):
 
-    draw_commands = GetCommandList(sld_file.frames[current_frame].sld_damage.damage_command_array)
+    draw_commands = GetCommandList(sld_file.sld_frames[current_frame].sld_damage.damage_command_array)
 
     pixel_blocks = []
     current_block_index = 0
@@ -52,12 +52,12 @@ def ConstructDamageGraphic(sld_file, current_frame, show_images=False):
 
             pixel_blocks.append(FillDXT1_BlankPixelBlocks())
         for draw in range(command['draw']):
-            current_block = sld_file.frames[current_frame].sld_damage.damage_layer_blocks[current_block_index]
+            current_block = sld_file.sld_frames[current_frame].sld_damage.damage_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
             pixel_blocks.append(FillDXT1_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
-    graphics = sld_file.frames[current_frame].sld_main.graphics_header
+    graphics = sld_file.sld_frames[current_frame].sld_main.graphics_header
     width = (graphics.offset_x2 - graphics.offset_x1)
     height = (graphics.offset_y2 - graphics.offset_y1)
 
@@ -70,7 +70,7 @@ def ConstructDamageGraphic(sld_file, current_frame, show_images=False):
     return DamageImage
 
 def ConstructShadowGraphic(sld_file, current_frame, show_images=False):
-    draw_commands = GetCommandList(sld_file.frames[current_frame].sld_shadow.shadow_command_array)
+    draw_commands = GetCommandList(sld_file.sld_frames[current_frame].sld_shadow.shadow_command_array)
 
     pixel_blocks = []
     current_block_index = 0
@@ -78,13 +78,13 @@ def ConstructShadowGraphic(sld_file, current_frame, show_images=False):
         for skip in range(command['skip']):
             pixel_blocks.append(FillDXT4_BlankPixelBlocks())
         for draw in range(command['draw']):
-            current_block = sld_file.frames[current_frame].sld_shadow.shadow_layer_blocks[current_block_index]
+            current_block = sld_file.sld_frames[current_frame].sld_shadow.shadow_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
 
             pixel_blocks.append(Fill_SLD_DXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
-    graphics = sld_file.frames[current_frame].sld_shadow.shadow_graphics_header
+    graphics = sld_file.sld_frames[current_frame].sld_shadow.shadow_graphics_header
 
     width = (graphics.offset_x2 - graphics.offset_x1)
     height = (graphics.offset_y2 - graphics.offset_y1)
@@ -99,20 +99,20 @@ def ConstructShadowGraphic(sld_file, current_frame, show_images=False):
 
 def ConstructPlayerColourGraphic(sld_file, current_frame, show_images=False):
 
-    draw_commands = GetCommandList(sld_file.frames[current_frame].sld_player_colour.player_colour_command_array)
+    draw_commands = GetCommandList(sld_file.sld_frames[current_frame].sld_player_colour.player_colour_command_array)
     pixel_blocks = []
     current_block_index = 0
     for command in draw_commands:
         for skip in range(command['skip']):
             pixel_blocks.append(FillDXT4_BlankPixelBlocks())
         for draw in range(command['draw']):
-            current_block = sld_file.frames[current_frame].sld_player_colour.player_colour_layer_blocks[current_block_index]
+            current_block = sld_file.sld_frames[current_frame].sld_player_colour.player_colour_layer_blocks[current_block_index]
             lookup_table = current_block.create_lookup_table()
 
             pixel_blocks.append(Fill_SLD_DXT4_PixelBlocks(lookup_table, current_block.pixel_indices))
             current_block_index += 1
 
-    graphics = sld_file.frames[current_frame].sld_main.graphics_header
+    graphics = sld_file.sld_frames[current_frame].sld_main.graphics_header
 
     width = (graphics.offset_x2 - graphics.offset_x1)
     height = (graphics.offset_y2 - graphics.offset_y1)
@@ -127,7 +127,7 @@ def ConstructPlayerColourGraphic(sld_file, current_frame, show_images=False):
 
 def DrawGraphicsLayers(sld_file, current_frame, show_images):
     images = {}
-    frame_dict = lookup_layers(sld_file.frames[current_frame].sld_frame_header.frame_type)
+    frame_dict = lookup_layers(sld_file.sld_frames[current_frame].sld_frame_header.frame_type)
     #print(frame_dict)
     images.setdefault('07 main',{})
 
