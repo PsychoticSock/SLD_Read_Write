@@ -3,6 +3,23 @@ from __future__ import annotations
 from binary_file_parser import BaseStruct, Retriever, Version
 from binary_file_parser.types import ByteStream, FixedLenStr, uint16, uint32, uint8
 
+def convert_pixel_array_to_lookup(pixel_array):
+    output_array = []
+    for x in range(0, len(pixel_array), 5):
+
+        palette_sections = pixel_array[x + 4]
+        palette_section_pixel0 = palette_sections & 0b00000011
+        palette_section_pixel1 = palette_sections >> 2 & 0b00000011
+        palette_section_pixel2 = palette_sections >> 4 & 0b00000011
+        palette_section_pixel3 = palette_sections >> 6 & 0b00000011
+
+        output_array.append([pixel_array[x], palette_section_pixel0])
+        output_array.append([pixel_array[x+1], palette_section_pixel1])
+        output_array.append([pixel_array[x+2], palette_section_pixel2])
+        output_array.append([pixel_array[x+3], palette_section_pixel3])
+
+    return output_array
+
 class SMX_Layer_Header(BaseStruct):
     # @formatter:off
     width: int                  = Retriever(uint16,         default=0)
